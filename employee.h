@@ -1,38 +1,148 @@
-// 4.1 Employee класс (1, 0..1, 0..n харьцаануудыг агуулсан)
-class Employee {
-    string name;
-    // 1 харьцаа (Aggregation)
-    Division* division;          
-    JobDescription* jobDesc;    
-    // 0..1 харьцаа (Заагч ашиглан хориглолт хийх)
-    Spouse* spouse;              
-    // 0..n харьцаа (Vector ашиглан олон хүүхэд нэмэх боломжтой)
-    vector<Child*> children;    
- 
+#pragma once
+#include <vector>
+#include <stdexcept>
+#include "Person.h"
+#include "Spouse.h"
+#include "Child.h"
+#include "Division.h"
+#include "JobDescription.h"
+
+class Employee : public Person {
+private:
+    string companyID;
+    string title;
+    string startDate;
+
+    Spouse* spouse;                     // 0..1  pointer, can be nullptr
+    vector<Child> children;             // 0..n  can be empty
+    Division* division;                 // 1     must not be nullptr
+    vector<JobDescription> jobDescriptions; // 1..n  at least one required
+
 public:
-    Employee(string n, Division* div, JobDescription* job)
-        : name(n), division(div), jobDesc(job), spouse(nullptr) {}
- 
-    // 4.4 Spouse, Child-уудыг тохируулах функцууд
-    void setSpouse(Spouse* s) {
-        spouse = s;
+    //constructor ni division, jobDescription 2 parametertei baina. JobDescription ni 1..n uchir nemeh function deer nemeh bolno
+    Employee(
+        string name,
+        string ssNum,
+        int age,
+        string companyID,
+        string title,
+        string startDate,
+        Division* division,
+        JobDescription firstJob
+    )
+        : Person(name, ssNum, age),
+          companyID(companyID),
+          title(title),
+          startDate(startDate),
+          spouse(nullptr), division(nullptr)
+    {
+        if(division == nullptr){
+            cout << "Division zaaval baih\n";
+            return; 
     }
-    void addChild(Child* c) {
+
+        this->division = division;
+        jobDescriptions.push_back(firstJob);
+    }
+
+    // Getters
+    string getCompanyID() const {
+        return companyID;
+    }
+
+    string getTitle() const {
+        return title;
+    }
+
+    string getStartDate() const {
+        return startDate;
+    }
+
+    Spouse* getSpouse() const {
+        return spouse;
+    }
+
+    const vector<Child>& getChildren() const {
+        return children;
+    }
+
+    Division* getDivision() const {
+        return division;
+    }
+
+    const vector<JobDescription>& getJobDescriptions() const {
+        return jobDescriptions;
+    }
+
+    // Setters
+    void setCompanyID(string id) {
+        this->companyID = id;
+    }
+
+    void setTitle(string t) {
+        this->title = t;
+    }
+
+    void setStartDate(string date) {
+        this->startDate = date;
+    }
+
+    void setSpouse(Spouse* s) {  // 0..1
+        this->spouse = s;
+    }
+
+    void addChild(const Child& c) {  // 0..n
         children.push_back(c);
     }
- 
-    // 4.5 Бүх мэдээллийг хэвлэх
-    void printInfo() {
-        cout << "Ajiltan: " << name << "\n";
-        if (division) cout << "  Heltes (1): " << division->getName() << "\n";
-        if (jobDesc) cout << "  Alban tushaal (1): " << jobDesc->getTitle() << "\n";
- 
-        if (spouse) cout << "  Ehner/Nuhur (0..1): " << spouse->getName() << "\n";
-        else cout << "  Ehner/Nuhur (0..1): Baihgui\n";
- 
-        cout << "  Huuhduud (0..n): ";
-        if (children.empty()) cout << "Baihgui";
-        for (auto child : children) cout << child->getName() << " ";
-        cout << "\n--------------------------\n";
+
+    void setDivision(Division* d) {  // 1
+        if(d == nullptr){
+            throw invalid_argument("Division cannot be null (cardinality 1).");
+        }
+        this->division = d;
+    }
+
+    void addJobDescription(const JobDescription& jd) {  // 1..n
+        jobDescriptions.push_back(jd);
+    }
+
+    void print() const {
+        cout << "========================================" << endl;
+        cout << "EMPLOYEE INFO" << endl;
+        cout << "========================================" << endl;
+
+        cout << "[Person]" << endl;
+        Person::print();
+
+        cout << "[Employee]" << endl;
+        cout << "  Company ID : " << companyID << endl;
+        cout << "  Title      : " << title << endl;
+        cout << "  Start Date : " << startDate << endl;
+
+        cout << "[Division]" << endl;
+        division->print();
+
+        cout << "[Job Descriptions]" << endl;
+        for(const JobDescription& jd : jobDescriptions){
+            jd.print();
+        }
+
+        cout << "[Spouse]" << endl;
+        if(spouse != nullptr){
+            spouse->print();
+        } else {
+            cout << "  (none)" << endl;
+        }
+
+        cout << "[Children]" << endl;
+        if(children.empty()){
+            cout << "  (none)" << endl;
+        }else{
+            for(int i = 0; i < (int)children.size(); i++){
+                cout << "  Child #" << (i + 1) << ":" << endl;
+                children[i].print();
+            }
+        }
+        cout << endl;
     }
 };

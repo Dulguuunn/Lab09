@@ -1,10 +1,25 @@
-#ifndef CLASS_H
-#define CLASS_H
-#include <string>
-class Spouse {
-    string name;
+#pragma once
+#include "Person.h"
+
+class Spouse : public Person {
+private:
+    string anniversaryDate;
+
 public:
-    Spouse(string n) : name(n) {}
-    string getName() { return name; }
+    Spouse() : Person(), anniversaryDate("") {}
+    Spouse(string name, string ssNum, int age, string anniversaryDate)
+        : Person(name, ssNum, age), anniversaryDate(anniversaryDate) {}
+
+    string getAnniversaryDate() const {
+        return anniversaryDate;
+    }
+
+    void setAnniversaryDate(string date) {
+        this->anniversaryDate = date;
+    }
+
+    void print() const {
+        Person::print();
+        cout<<"  Anniversary Date: "<<anniversaryDate << endl;
+    }
 };
-#endif
